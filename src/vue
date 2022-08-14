@@ -1,0 +1,42 @@
+<script setup>
+import { ref, reactive } from 'vue'
+
+const globalState = ref({})
+
+let gamepadObj = {};
+
+ window.addEventListener('gamepadconnected',(e)=>{
+   //console.log(e);
+   gamepadHandler(e,true);
+ })
+  
+  function gamepadHandler(event, connecting) {
+    const gamePad = event.gamepad;
+
+    if (connecting) {
+      gamepadObj[gamePad.index] = gamePad;
+      pollgamepad();
+    }
+  }
+  
+  function pollgamepad(){
+    
+    setInterval(()=>{
+      const gamePads= navigator.getGamepads()[0];
+      const someVar = [];
+       for(let i = 0; i < gamePads.buttons.length; i++){
+         someVar.push(gamePads.buttons[i].value);
+       }
+      globalState.value = someVar;
+    },100)
+    
+  }
+
+
+</script>
+
+<template>
+	<h1>
+    {{globalState}}
+  </h1>
+</template>

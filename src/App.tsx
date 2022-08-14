@@ -1,40 +1,66 @@
+import { useEffect, useState, useRef } from "react";
 import "./App.css";
 
 function App() {
+  //State
+  const [xboxController, setxboxController] = useState({});
+
   let gamepadObj: Gamepad[] = [];
 
-  window.addEventListener(
-    "gamepadconnected",
-    (ev: GamepadEvent) => {
-      gamepadHandler(ev, true);
-    },
-    false
-  );
+  useEffect(() => {
+    window.addEventListener(
+      "gamepadconnected",
+      (ev: GamepadEvent) => {
+        gamepadHandler(ev, true);
+      },
+      false
+    );
+
+    return () => {
+      window.removeEventListener(
+        "gamepadconnected",
+        (ev: GamepadEvent) => {
+          gamepadHandler(ev, true);
+        },
+        false
+      );
+    };
+  });
+
+  let haveEvents = "gamepadconnected" in window;
 
   function gamepadHandler(event: GamepadEvent, connecting: boolean): void {
     const gamePad: Gamepad = event.gamepad;
 
     if (connecting) {
       gamepadObj[gamePad.index] = gamePad;
-      pollGamepads();
     }
   }
 
-  function pollGamepads(): void {
-    //constant data stream
-    setInterval(() => {
-      const gamePads: Gamepad | null = navigator.getGamepads()[0];
+  //constant data stream
+  useEffect(() => {
+    const gamePads: Gamepad | null = navigator.getGamepads()[0];
 
-      if (gamePads !== null) {
-        for (let i = 0; i < gamePads?.buttons.length; i++) {
-          let buttons = gamePads?.buttons[i];
-          console.log(buttons);
-        }
+    if (gamePads !== null) {
+      for (let i = 0; i < gamePads?.buttons.length; i++) {
+        let buttons = gamePads?.buttons[i];
+        setxboxController({
+          ...xboxController,
+          gameButton: buttons,
+        });
       }
-    }, 100);
-  }
+      //console.log(xboxController);
+    }
+  }, [xboxController]);
 
-  return <div className="App"></div>;
+  setInterval(() => {
+    if (!haveEvents) navigator.getGamepads()[0];
+  }, 1000);
+  return (
+    <div className="App">
+      <div className="Buttons"></div>
+    </div>
+  );
 }
 
 export default App;
