@@ -1,33 +1,21 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
   //State
-  const [xboxController, setxboxController] = useState({});
+  const [xboxController, setxboxController] = useState<{
+    [key: string]: number;
+  }>({});
 
   let gamepadObj: Gamepad[] = [];
 
-  useEffect(() => {
-    window.addEventListener(
-      "gamepadconnected",
-      (ev: GamepadEvent) => {
-        gamepadHandler(ev, true);
-      },
-      false
-    );
-
-    return () => {
-      window.removeEventListener(
-        "gamepadconnected",
-        (ev: GamepadEvent) => {
-          gamepadHandler(ev, true);
-        },
-        false
-      );
-    };
-  });
-
-  let haveEvents = "gamepadconnected" in window;
+  window.addEventListener(
+    "gamepadconnected",
+    (ev: GamepadEvent) => {
+      gamepadHandler(ev, true);
+    },
+    false
+  );
 
   function gamepadHandler(event: GamepadEvent, connecting: boolean): void {
     const gamePad: Gamepad = event.gamepad;
@@ -38,27 +26,26 @@ function App() {
   }
 
   //constant data stream
-  useEffect(() => {
-    const gamePads: Gamepad | null = navigator.getGamepads()[0];
 
-    if (gamePads !== null) {
-      for (let i = 0; i < gamePads?.buttons.length; i++) {
-        let buttons = gamePads?.buttons[i];
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const gamePads: Gamepad | null = navigator.getGamepads()[0];
+      let someVar: any = [];
+      if (gamePads !== null) {
+        for (let i = 0; i < gamePads?.buttons.length; i++) {
+          someVar.push(gamePads.buttons[i].value);
+        }
         setxboxController({
-          ...xboxController,
-          gameButton: buttons,
+          buttonsPressed: someVar,
         });
       }
-      //console.log(xboxController);
-    }
-  }, [xboxController]);
+      return () => clearInterval(interval);
+    }, 100);
+  }, []);
 
-  setInterval(() => {
-    if (!haveEvents) navigator.getGamepads()[0];
-  }, 1000);
   return (
     <div className="App">
-      <div className="Buttons"></div>
+      <div className="Buttons">{`${xboxController.buttonsPressed}`}</div>
     </div>
   );
 }

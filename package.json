@@ -2,6 +2,9 @@
   "name": "xboxcontroller",
   "version": "0.1.0",
   "private": true,
+  "resolutions": {
+    "@types/react": "^17.0.38"
+  },
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.3.0",
@@ -17,6 +20,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+    "preinstall": "npm install --package-lock-only --ignore-scripts && npx npm-force-resolutions",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
