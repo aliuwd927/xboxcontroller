@@ -7,23 +7,9 @@ function App() {
     [key: string]: number;
   }>({});
 
-  let gamepadObj: Gamepad[] = [];
-
-  window.addEventListener(
-    "gamepadconnected",
-    (ev: GamepadEvent) => {
-      gamepadHandler(ev, true);
-    },
-    false
-  );
-
-  function gamepadHandler(event: GamepadEvent, connecting: boolean): void {
-    const gamePad: Gamepad = event.gamepad;
-
-    if (connecting) {
-      gamepadObj[gamePad.index] = gamePad;
-    }
-  }
+  window.addEventListener("gamepadconnected", (ev: GamepadEvent) => {
+    console.log(ev);
+  });
 
   //constant data stream
 
@@ -45,7 +31,7 @@ function App() {
 
   return (
     <div className="App">
-      <div className="Buttons">{`${xboxController.buttonsPressed}`}</div>
+      <h1 className="Buttons">{`${xboxController.buttonsPressed}`}</h1>
     </div>
   );
 }
