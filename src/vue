@@ -40,3 +40,72 @@ let gamepadObj = {};
     {{globalState}}
   </h1>
 </template>
+
+
+/*
+
+import * as React from 'react';
+import { useStore, GamePadStore } from './store';
+import './style.css';
+
+
+
+// your function for retreiving buttons goes here
+const _generateButtons = () => {
+  const gamePads = navigator.getGamepads()[0];
+  const someVar = [];
+  for (let i = 0; i < gamePads.buttons.length; i++) {
+    someVar.push(gamePads.buttons[i].value);
+  }
+  return someVar;
+};
+
+function Display() {
+  const ref = React.useRef<HTMLPreElement>();
+
+  React.useEffect(() => {
+    return useStore.subscribe((state) => {
+      if (!ref.current) return;
+      ref.current.innerText = JSON.stringify(state.buttons, null, 2);
+    });
+  }, []);
+
+  return <pre ref={ref}></pre>;
+}
+
+export default function App() {
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      useStore.getState().update(_generateButtons());
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div>
+      <h1>Hello StackBlitz!</h1>
+      <Display />
+    </div>
+  );
+}
+
+
+
+import create from 'zustand';
+
+export interface GamePadStore {
+  buttons: number[];
+  update: (buttons: GamePadStore['buttons']) => void;
+}
+
+export const useStore = create<GamePadStore>((set) => ({
+  buttons: [],
+  update: (buttons) => set(() => ({ buttons })),
+}));
+
+
+
+
+
+*/
