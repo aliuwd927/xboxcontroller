@@ -25,8 +25,8 @@ function App() {
           buttonsPressed: someVar,
         });
       }
-      return () => clearInterval(interval);
     }, 100);
+    return () => clearInterval(interval);
   }, []);
 
   return (
