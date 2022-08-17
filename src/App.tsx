@@ -37,3 +37,11 @@ function App() {
 }
 
 export default App;
+
+/*
+
+micheaaa: Also If you are going to send constant messages (controller commands) to the server (via express).
+          It would be helpful to look into websockets (socketio)
+micheaaa: socket io can be used with express
+
+*/
