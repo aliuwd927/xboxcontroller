@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-  "start": "node main.js"
+    "start": "node main.js"
   },
   "keywords": [],
   "author": "",
@@ -18,7 +18,8 @@
     "@fastify/websocket": "^7.0.0",
     "fastify": "^4.5.2",
     "fastify-cli": "^4.4.0",
-    "fastify-plugin": "^3.0.0"
+    "fastify-plugin": "^3.0.0",
+    "nodemon": "^2.0.19"
   },
   "devDependencies": {
     "tap": "^16.1.0"

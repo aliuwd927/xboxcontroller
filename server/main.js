@@ -14,18 +14,22 @@ fastify.register(async function (fastify) {
     (connection /* SocketStream */, req /* FastifyRequest */) => {
       connection.socket.on("message", (message) => {
         // message.toString() === 'hi from client'
-        djiTello.send(message, 0, message.length, udp, telloIp);
+        // djiTello.send(message, 0, message.length, udp, telloIp);
         //Takes message from the front end when controll input
-        console.log(`${message}`);
+        console.log(
+          `I am coming from FE and you are sending the command: ${message}`
+        );
 
-        //connection.socket.send();
+        connection.socket.send(
+          `I am coming from FE and you are sending the command: ${message}`
+        );
       });
 
-      djiTelloState
-        .on("message", (message) => {
-          console.log(`${message}`);
-        })
-        .bind(udpTelloStatePort);
+      // djiTelloState
+      //   .on("message", (message) => {
+      //     console.log(`${message}`);
+      //   })
+      //   .bind(udpTelloStatePort);
     }
   );
 });

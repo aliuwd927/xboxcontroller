@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import useWebSocket from "react-use-websocket";
 import "./App.css";
 
 function App() {
@@ -10,9 +11,26 @@ function App() {
   const [controllerAxes, setControllerAxes] = useState<{
     [key: string]: number[];
   }>({});
+  // In functional React component
+
+  // This can also be an async getter function. See notes below on Async Urls.
+  const socketUrl = "ws://localhost:4000/hello-ws";
+
+  const {
+    sendMessage,
+    sendJsonMessage,
+    lastMessage,
+    lastJsonMessage,
+    readyState,
+    getWebSocket,
+  } = useWebSocket(socketUrl, {
+    onOpen: () => console.log("opened"),
+    //Will attempt to reconnect on all close events, such as server shutting down
+    shouldReconnect: (closeEvent) => true,
+  });
 
   window.addEventListener("gamepadconnected", (ev: GamepadEvent) => {
-    //console.log(ev);
+    //console.log(ev.gamepad?.buttons?.[8]);
   });
 
   //constant data stream
@@ -39,11 +57,20 @@ function App() {
         });
       }
     }, 100);
+
     return () => clearInterval(interval);
   }, []);
 
+  //Iterate thru the obect
+  //if object.property value > 1 return t / f
+  //sendMessage (boolean)
+
   return (
     <div className="App">
+      <div className="previous_sent">
+        <h1>{`${lastMessage?.data}`}</h1>
+      </div>
+
       <div className="_Left_Analog_Stick_Container">
         <h3 className="_Left_Analog_Stick_X">
           Left Analog Stick X Values:{"  "}{" "}
