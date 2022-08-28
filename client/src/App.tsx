@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import useWebSocket from "react-use-websocket";
 import "./App.css";
 
@@ -29,7 +29,22 @@ function App() {
     shouldReconnect: (closeEvent) => true,
   });
 
-  window.addEventListener("gamepadconnected", (ev: GamepadEvent) => {
+  const sendToBackEnd = useCallback(() => {
+    // console.log(isPressed.buttonsPressed?.[0]);
+    //Have a for loop that checks every value of buttons
+    //If value is true sendMsg()
+    //false , do nothing
+    // console.log(button);
+    // if (Number(button) === 0) {
+    //   return;
+    // } else {
+    //   sendMessage(button.toString());
+    // }
+    //Issue:
+    //When button is depress, A button still read undefined.
+  }, [sendMessage]);
+
+  window.addEventListener("gamepadconnected", () => {
     //console.log(ev.gamepad?.buttons?.[8]);
   });
 
@@ -37,8 +52,8 @@ function App() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const gamePads: Gamepad | null = navigator.getGamepads()[0];
       //Controller Buttons Pressed Below
+      const gamePads = navigator.getGamepads()[0];
       let someControllerButtons: number[] = [];
       if (gamePads !== null) {
         for (let i = 0; i < gamePads?.buttons.length; i++) {
@@ -57,7 +72,6 @@ function App() {
         });
       }
     }, 100);
-
     return () => clearInterval(interval);
   }, []);
 
@@ -151,3 +165,47 @@ micheaaa: Also If you are going to send constant messages (controller commands) 
 micheaaa: socket io can be used with express
 
 */
+
+/*
+22:39 xmetrix: so you need a "state machine" of sorts that fires events ;) 
+
+22:41 xmetrix: personally i'd create a controller object 
+               and define all axis and buttons, then use that polling to deterministically set their values 
+               and when im changing the value, fire off an event for each 
+
+22:41 xmetrix: so when you have a stream of 1's on pressing the Button A, you can be like 
+               if (button.a == 1) and mycontroller.a == 0 then... Ok we have a change.. mycontroller.a = 1 
+               (fireEvent(buttonApressed) .... and likewise.. if button.a == 0 && mycontroller.a ==1 ok 
+               we have release button fireEvent(buttona_released) mycontroller.a = 0 
+
+22:43 xmetrix: that way .. the next time through if button.a == 1 and mycontroller.a == 0 will be false so 
+               it wont fire off the change ;) 
+*/
+
+/*
+
+Known:
+gamePads.buttons has your polled button states (this already ready 0 / false)
+
+Need to do:
+need to compare someControllerButtons with the prior value
+and only call setIsPressed if some button changed
+it would be better not to even create someControllerButtons array unless something changed
+when you iterate through each button rather than pushing to the array you could compare the 
+value with the old value at the same index
+if/when one changed, then create a copy of the old value and set the new one in the copy
+then after the loop, only setIsPressed if someControllerButtons isn't undefined
+
+
+
+
+so you'd poll.. get all the values.. 
+then check each value of your controller object against the polled values
+starting with buttona.. check polled value if it changed. update your buttona.. 
+fire an event for buttona if it was pressed or released
+
+
+so ideally you poll the controller to get an array of all the values
+then for each of those values you have an object that has all those values
+
+ */

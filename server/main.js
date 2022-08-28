@@ -7,8 +7,8 @@ const djiTello = dgram.createSocket("udp4"),
   djiTelloState = dgram.createSocket("udp4");
 
 fastify.register(require("@fastify/websocket"));
-fastify.register(async function (fastify) {
-  fastify.get(
+fastify.register(async function (fast) {
+  fast.get(
     "/hello-ws",
     { websocket: true },
     (connection /* SocketStream */, req /* FastifyRequest */) => {
@@ -17,12 +17,10 @@ fastify.register(async function (fastify) {
         // djiTello.send(message, 0, message.length, udp, telloIp);
         //Takes message from the front end when controll input
         console.log(
-          `I am coming from FE and you are sending the command: ${message}`
+          `I am coming from FE and you are sending the command: ${message} to console log`
         );
 
-        connection.socket.send(
-          `I am coming from FE and you are sending the command: ${message}`
-        );
+        connection.socket.send(`I am sending this to postman`);
       });
 
       // djiTelloState
