@@ -4,9 +4,9 @@ import "./App.css";
 
 function App() {
   //State
-  const [isPressed, setIsPressed] = useState<{
-    [key: string]: number[];
-  }>({});
+  const [localControllerArray, setLocalControllerArray] = useState<number[]>([
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  ]);
 
   const [controllerAxes, setControllerAxes] = useState<{
     [key: string]: number[];
@@ -30,7 +30,7 @@ function App() {
   });
 
   const sendToBackEnd = useCallback(() => {
-    // console.log(isPressed.buttonsPressed?.[0]);
+    // console.log(localControllerArray?.[0]);
     //Have a for loop that checks every value of buttons
     //If value is true sendMsg()
     //false , do nothing
@@ -44,36 +44,40 @@ function App() {
     //When button is depress, A button still read undefined.
   }, [sendMessage]);
 
-  window.addEventListener("gamepadconnected", () => {
-    //console.log(ev.gamepad?.buttons?.[8]);
-  });
+  useEffect(() => {
+    window.addEventListener("gamepadconnected", () => {
+      const gamePad = navigator.getGamepads()[0];
+    });
+
+    return window.removeEventListener("gamepadconnected", () => {
+      return;
+    });
+  }, []);
 
   //constant data stream
 
   useEffect(() => {
     const interval = setInterval(() => {
       //Controller Buttons Pressed Below
-      const gamePads = navigator.getGamepads()[0];
-      let someControllerButtons: number[] = [];
-      if (gamePads !== null) {
-        for (let i = 0; i < gamePads?.buttons.length; i++) {
-          someControllerButtons.push(gamePads.buttons[i].value);
+      const gamePads: Gamepad | null = navigator.getGamepads()[0];
+      if (gamePads != null) {
+        for (let i = 0; i < gamePads.buttons?.length; i++) {
+          if (localControllerArray[i] !== gamePads.buttons[i].value) {
+            setLocalControllerArray(
+              gamePads.buttons.map((button, index) => {
+                if (button.pressed) {
+                  console.log(button, index);
+                  console.log("event fired");
+                }
+                return button.value;
+              })
+            );
+          }
         }
-        setIsPressed({
-          buttonsPressed: someControllerButtons,
-        });
-        //Controller Axes Joystick Below
-        let someControllerAxes: number[] = [];
-        for (let j = 0; j < gamePads?.axes.length; j++) {
-          someControllerAxes.push(gamePads?.axes[j]);
-        }
-        setControllerAxes({
-          controllerAxes: someControllerAxes,
-        });
       }
-    }, 100);
+    }, 125);
     return () => clearInterval(interval);
-  }, []);
+  }, [localControllerArray]);
 
   //Iterate thru the obect
   //if object.property value > 1 return t / f
@@ -109,47 +113,47 @@ function App() {
 
       <div className="_Main_Aux_Button_Container">
         <h3 className="_Main_Aux_View">
-          View: {`${isPressed.buttonsPressed?.[8]}`}
+          View: {`${localControllerArray?.[8]}`}
         </h3>
         <h3 className="_Main_Aux_Menu">
-          Menu: {`${isPressed.buttonsPressed?.[9]}`}
+          Menu: {`${localControllerArray?.[9]}`}
         </h3>
       </div>
 
       <div className="_Main_Pad_Container">
-        <h3 className="_Main_Pad_A">A: {`${isPressed.buttonsPressed?.[0]}`}</h3>
-        <h3 className="_Main_Pad_B">B: {`${isPressed.buttonsPressed?.[1]}`}</h3>
-        <h3 className="_Main_Pad_X">X: {`${isPressed.buttonsPressed?.[2]}`}</h3>
-        <h3 className="_Main_Pad_Y">Y: {`${isPressed.buttonsPressed?.[3]}`}</h3>
+        <h3 className="_Main_Pad_A">A: {`${localControllerArray?.[0]}`}</h3>
+        <h3 className="_Main_Pad_B">B: {`${localControllerArray?.[1]}`}</h3>
+        <h3 className="_Main_Pad_X">X: {`${localControllerArray?.[2]}`}</h3>
+        <h3 className="_Main_Pad_Y">Y: {`${localControllerArray?.[3]}`}</h3>
       </div>
 
       <div className="_Main_DPad_Container">
         <h3 className="_Main_DPad_A">
-          D_Pad U: {`${isPressed.buttonsPressed?.[12]}`}
+          D_Pad U: {`${localControllerArray?.[12]}`}
         </h3>
         <h3 className="_Main_DPad_B">
-          D_Pad D: {`${isPressed.buttonsPressed?.[13]}`}
+          D_Pad D: {`${localControllerArray?.[13]}`}
         </h3>
         <h3 className="_Main_DPad_X">
-          D_Pad L: {`${isPressed.buttonsPressed?.[14]}`}
+          D_Pad L: {`${localControllerArray?.[14]}`}
         </h3>
         <h3 className="_Main_DPad_Y">
-          D_Pad R: {`${isPressed.buttonsPressed?.[15]}`}
+          D_Pad R: {`${localControllerArray?.[15]}`}
         </h3>
       </div>
 
       <div className="_Controller_Bumpers_Container">
         <h3 className="_Controller_Bumper_L">
-          Bumper L: {`${isPressed.buttonsPressed?.[4]}`}
+          Bumper L: {`${localControllerArray?.[4]}`}
         </h3>
         <h3 className="_Controller_Bumper_R">
-          Bumper R: {`${isPressed.buttonsPressed?.[5]}`}
+          Bumper R: {`${localControllerArray?.[5]}`}
         </h3>
         <h3 className="_Controller_Bumper_Trigger_L">
-          Trigger L: {`${isPressed.buttonsPressed?.[6]}`}
+          Trigger L: {`${localControllerArray?.[6]}`}
         </h3>
         <h3 className="_Controller_Bumper_Trigger_R">
-          Trigger R: {`${isPressed.buttonsPressed?.[7]}`}
+          Trigger R: {`${localControllerArray?.[7]}`}
         </h3>
       </div>
     </div>
@@ -183,18 +187,21 @@ micheaaa: socket io can be used with express
 */
 
 /*
+Use this for the html section
+     gamePads?.buttons.map((button, index) => {
+        if (localControllerArray[index] !== button.value) {
+          setLocalControllerArray((localControllerArray[index] = button.value));
+        }
 
-Known:
-gamePads.buttons has your polled button states (this already ready 0 / false)
 
 Need to do:
 need to compare someControllerButtons with the prior value
-and only call setIsPressed if some button changed
+and only call setlocalControllerArray if some button changed
 it would be better not to even create someControllerButtons array unless something changed
 when you iterate through each button rather than pushing to the array you could compare the 
 value with the old value at the same index
 if/when one changed, then create a copy of the old value and set the new one in the copy
-then after the loop, only setIsPressed if someControllerButtons isn't undefined
+then after the loop, only setlocalControllerArray if someControllerButtons isn't undefined
 
 
 
@@ -207,5 +214,48 @@ fire an event for buttona if it was pressed or released
 
 so ideally you poll the controller to get an array of all the values
 then for each of those values you have an object that has all those values
+
+
+https://codepen.io/xmxstudio/pen/dymBzzx
+
+
+
+https://imgur.com/9zVaBfw
+
+
+
+
+https://playcode.io/949507/
+
+
+main thing to understand with react here is calling setState with a new value always causes a new render
+ */
+
+/*
+
+useEffect(() => {
+    const interval = setInterval(() => {
+      //Controller Buttons Pressed Below
+      const gamePads = navigator.getGamepads()[0];
+      let someControllerButtons: number[] = [];
+      if (gamePads !== null) {
+        for (let i = 0; i < gamePads?.buttons.length; i++) {
+          someControllerButtons.push(gamePads.buttons[i].value);
+        }
+        setlocalControllerArray({
+          buttonsPressed: someControllerButtons,
+        });
+        //Controller Axes Joystick Below
+        let someControllerAxes: number[] = [];
+        for (let j = 0; j < gamePads?.axes.length; j++) {
+          someControllerAxes.push(gamePads?.axes[j]);
+        }
+        setControllerAxes({
+          controllerAxes: someControllerAxes,
+        });
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
 
  */
