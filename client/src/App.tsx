@@ -29,20 +29,23 @@ function App() {
     shouldReconnect: (closeEvent) => true,
   });
 
-  const sendToBackEnd = useCallback(() => {
-    // console.log(localControllerArray?.[0]);
-    //Have a for loop that checks every value of buttons
-    //If value is true sendMsg()
-    //false , do nothing
-    // console.log(button);
-    // if (Number(button) === 0) {
-    //   return;
-    // } else {
-    //   sendMessage(button.toString());
-    // }
-    //Issue:
-    //When button is depress, A button still read undefined.
-  }, [sendMessage]);
+  const sendToBackEnd = useCallback(
+    (button: number) => {
+      // console.log(localControllerArray?.[0]);
+      //Have a for loop that checks every value of buttons
+      //If value is true sendMsg()
+      //false , do nothing
+      console.log(button);
+      if (Number(button) === 0) {
+        return;
+      } else {
+        sendMessage(button.toString());
+      }
+      //Issue:
+      //When button is depress, A button still read undefined.
+    },
+    [sendMessage]
+  );
 
   useEffect(() => {
     window.addEventListener("gamepadconnected", () => {
@@ -72,12 +75,14 @@ function App() {
                 return button.value;
               })
             );
+            //After array is updated, send it to the back end.
+            sendToBackEnd(Number(gamePads.buttons[i].value));
           }
         }
       }
     }, 125);
     return () => clearInterval(interval);
-  }, [localControllerArray]);
+  }, [localControllerArray, sendToBackEnd]);
 
   //Iterate thru the obect
   //if object.property value > 1 return t / f
