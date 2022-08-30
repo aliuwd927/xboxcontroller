@@ -8,9 +8,11 @@ function App() {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   ]);
 
-  const [controllerAxes, setControllerAxes] = useState<{
-    [key: string]: number[];
-  }>({});
+  const [localControllerAxes, setLocalControllerAxes] = useState<number[]>([
+    0, 0, 0, 0,
+  ]);
+
+  const [droneState, setDroneState] = useState<boolean>(false);
   // In functional React component
 
   // This can also be an async getter function. See notes below on Async Urls.
@@ -29,27 +31,11 @@ function App() {
     shouldReconnect: (closeEvent) => true,
   });
 
-  const sendToBackEnd = useCallback(
-    (button: number[]) => {
-      // console.log(localControllerArray?.[0]);
-      //Have a for loop that checks every value of buttons
-      //If value is true sendMsg()
-      //false , do nothing
-      //console.log(button);
-      let testData = {
-        buttons: button[1],
-        buttonValue: button[0],
-      };
-      if (Number(button[0]) === 0) {
-        return;
-      } else {
-        sendJsonMessage(testData);
-      }
-      //Issue:
-      //When button is depress, A button still read undefined.
-    },
-    [sendJsonMessage]
-  );
+  const sendToBackEnd = useCallback(() => {
+    sendMessage(JSON.stringify({ localControllerArray, localControllerAxes }));
+    //Issue:
+    //When button is depress, A button still read undefined.
+  }, [sendMessage, localControllerArray, localControllerAxes]);
 
   useEffect(() => {
     window.addEventListener("gamepadconnected", () => {
@@ -68,6 +54,7 @@ function App() {
       //Controller Buttons Pressed Below
       const gamePads: Gamepad | null = navigator.getGamepads()[0];
       if (gamePads != null) {
+        //This Custom Event is for Buttons
         for (let i = 0; i < gamePads.buttons?.length; i++) {
           if (localControllerArray[i] !== gamePads.buttons[i].value) {
             setLocalControllerArray(
@@ -76,53 +63,46 @@ function App() {
               })
             );
             //After array is updated, send it to the back end.
+          }
 
-            localControllerArray.forEach((buttonsPressed, index) => {
-              if (buttonsPressed !== 0) {
-                //This maybe should for buttonsPressed[index]???
-                console.log(index);
-                console.log(typeof buttonsPressed);
-                sendToBackEnd([buttonsPressed, index]);
-              } else {
-                return;
-              }
-            });
+          for (let j = 0; j < gamePads?.axes.length; j++) {
+            console.log(gamePads.axes[j]);
+            if (localControllerAxes[j] !== gamePads.axes[j]) {
+              setLocalControllerAxes(
+                gamePads.axes.map((axesPosition) => {
+                  return axesPosition;
+                })
+              );
+            }
           }
         }
       }
     });
+    sendToBackEnd();
     return () => clearInterval(interval);
-  }, [localControllerArray, sendToBackEnd]);
-
-  //Iterate thru the obect
-  //if object.property value > 1 return t / f
-  //sendMessage (boolean)
+  }, [localControllerArray, localControllerAxes, sendToBackEnd]);
 
   return (
     <div className="App">
       <div className="previous_sent">
         <h1>{`${lastMessage?.data}`}</h1>
       </div>
-
+      <div></div>
       <div className="_Left_Analog_Stick_Container">
         <h3 className="_Left_Analog_Stick_X">
-          Left Analog Stick X Values:{"  "}{" "}
-          {`${controllerAxes.controllerAxes?.[0]}`}
+          Left Analog Stick X Values:{"  "} {`${localControllerAxes?.[0]}`}
         </h3>
         <h3 className="_Left_Analog_Stick_Y">
-          Left Analog Stick Y Values:{"  "}{" "}
-          {`${controllerAxes.controllerAxes?.[1]}`}
+          Left Analog Stick Y Values:{"  "} {`${localControllerAxes?.[1]}`}
         </h3>
       </div>
 
       <div className="_Right_Analog_Stick_Container">
         <h3 className="_Right_Analog_Stick_X">
-          Right Analog Stick X Values:{"  "}{" "}
-          {`${controllerAxes.controllerAxes?.[2]}`}
+          Right Analog Stick X Values:{"  "} {`${localControllerAxes?.[2]}`}
         </h3>
         <h3 className="_Right_Analog_Stick_Y">
-          Right Analog Stick Y Values:{"  "}{" "}
-          {`${controllerAxes.controllerAxes?.[3]}`}
+          Right Analog Stick Y Values:{"  "} {`${localControllerAxes?.[3]}`}
         </h3>
       </div>
 
@@ -261,12 +241,12 @@ useEffect(() => {
           buttonsPressed: someControllerButtons,
         });
         //Controller Axes Joystick Below
-        let someControllerAxes: number[] = [];
+        let somelocalController: number[] = [];
         for (let j = 0; j < gamePads?.axes.length; j++) {
-          someControllerAxes.push(gamePads?.axes[j]);
+          somelocalController.push(gamePads?.axes[j]);
         }
-        setControllerAxes({
-          controllerAxes: someControllerAxes,
+        setlocalController({
+          localController: somelocalController,
         });
       }
     }, 100);

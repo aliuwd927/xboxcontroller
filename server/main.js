@@ -6,6 +6,8 @@ const udpTelloStatePort = 8890;
 const djiTello = dgram.createSocket("udp4"),
   djiTelloState = dgram.createSocket("udp4");
 
+//Global Varibale only for the drone
+
 fastify.register(require("@fastify/websocket"));
 fastify.register(async function (fast) {
   fast.get(
@@ -16,14 +18,12 @@ fastify.register(async function (fast) {
         // message.toString() === 'hi from client'
         // djiTello.send(message, 0, message.length, udp, telloIp);
         //Takes message from the front end when controll input
-        let msgObj = JSON.parse(message);
-        let buttonPressed = msgObj.buttons;
-        let triggerValue = msgObj.buttonValue;
-        console.log(triggerValue);
+        //console.log(JSON.parse(message));
+        const controllerObj = JSON.parse(message);
+        console.log(controllerObj.localControllerArray);
+        console.log(controllerObj.localControllerAxes);
 
-        connection.socket.send(
-          `You have just pressed button:${buttonPressed} : Value ${triggerValue}`
-        );
+        connection.socket.send(`You have just pressed button: : Value `);
       });
 
       // djiTelloState
