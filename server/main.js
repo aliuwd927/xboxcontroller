@@ -16,11 +16,14 @@ fastify.register(async function (fast) {
         // message.toString() === 'hi from client'
         // djiTello.send(message, 0, message.length, udp, telloIp);
         //Takes message from the front end when controll input
-        console.log(
-          `I am coming from FE and you are sending the command: ${message} to console log`
-        );
+        let msgObj = JSON.parse(message);
+        let buttonPressed = msgObj.buttons;
+        let triggerValue = msgObj.buttonValue;
+        console.log(triggerValue);
 
-        connection.socket.send(`I am sending this to postman`);
+        connection.socket.send(
+          `You have just pressed button:${buttonPressed} : Value ${triggerValue}`
+        );
       });
 
       // djiTelloState

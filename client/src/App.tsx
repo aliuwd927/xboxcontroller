@@ -30,21 +30,25 @@ function App() {
   });
 
   const sendToBackEnd = useCallback(
-    (button: number) => {
+    (button: number[]) => {
       // console.log(localControllerArray?.[0]);
       //Have a for loop that checks every value of buttons
       //If value is true sendMsg()
       //false , do nothing
-      console.log(button);
-      if (Number(button) === 0) {
+      //console.log(button);
+      let testData = {
+        buttons: button[1],
+        buttonValue: button[0],
+      };
+      if (Number(button[0]) === 0) {
         return;
       } else {
-        sendMessage(button.toString());
+        sendJsonMessage(testData);
       }
       //Issue:
       //When button is depress, A button still read undefined.
     },
-    [sendMessage]
+    [sendJsonMessage]
   );
 
   useEffect(() => {
@@ -67,20 +71,26 @@ function App() {
         for (let i = 0; i < gamePads.buttons?.length; i++) {
           if (localControllerArray[i] !== gamePads.buttons[i].value) {
             setLocalControllerArray(
-              gamePads.buttons.map((button, index) => {
-                if (button.pressed) {
-                  console.log(button, index);
-                  console.log("event fired");
-                }
+              gamePads.buttons.map((button) => {
                 return button.value;
               })
             );
             //After array is updated, send it to the back end.
-            sendToBackEnd(Number(gamePads.buttons[i].value));
+
+            localControllerArray.forEach((buttonsPressed, index) => {
+              if (buttonsPressed !== 0) {
+                //This maybe should for buttonsPressed[index]???
+                console.log(index);
+                console.log(typeof buttonsPressed);
+                sendToBackEnd([buttonsPressed, index]);
+              } else {
+                return;
+              }
+            });
           }
         }
       }
-    }, 125);
+    });
     return () => clearInterval(interval);
   }, [localControllerArray, sendToBackEnd]);
 
