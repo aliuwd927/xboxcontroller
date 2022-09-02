@@ -16,7 +16,7 @@ function App() {
   // In functional React component
 
   // This can also be an async getter function. See notes below on Async Urls.
-  const socketUrl = "ws://localhost:4000/hello-ws";
+  const socketUrl = "ws://localhost:4000/";
 
   const {
     sendMessage,
