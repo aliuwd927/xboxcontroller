@@ -66,7 +66,6 @@ function App() {
           }
 
           for (let j = 0; j < gamePads?.axes.length; j++) {
-            console.log(gamePads.axes[j]);
             if (localControllerAxes[j] !== gamePads.axes[j]) {
               setLocalControllerAxes(
                 gamePads.axes.map((axesPosition) => {
@@ -82,6 +81,7 @@ function App() {
     return () => clearInterval(interval);
   }, [localControllerArray, localControllerAxes, sendToBackEnd]);
 
+  console.log(lastMessage?.data);
   return (
     <div className="App">
       <div className="previous_sent">

@@ -1,8 +1,9 @@
 const dgram = require("dgram");
 const fastify = require("fastify")();
 const telloIp = "192.168.10.1";
+const selfIp = "0.0.0.0";
 const udp = 8889;
-const udpTelloStatePort = 8890;
+const stateOfTelloUDPPort = 8890;
 const djiTello = dgram.createSocket("udp4"),
   djiTelloState = dgram.createSocket("udp4");
 
@@ -16,31 +17,40 @@ fastify.register(async function (fast) {
     (connection /* SocketStream */, req /* FastifyRequest */) => {
       djiTello
         .on("listening", () => {
-          console.log("I am live");
+          console.log(
+            "Server IP: " + djiTello.address().address,
+            " Port: " + djiTello.address().port
+          );
         })
         .bind(udp);
+
+      let droneState;
+      djiTelloState
+        .on("message", (msg) => {
+          console.log(msg.toString().split(";"));
+          droneState = msg.toString().split(";");
+        })
+        .bind(stateOfTelloUDPPort, selfIp);
 
       connection.socket.on("message", (message) => {
         // message.toString() === 'hi from client'
 
-        const takeOffCmd = ["command", "takeoff"];
-        const landingCmd = ["Command", "land"];
-
         //Takes message from the front end when controll input
         //console.log(JSON.parse(message));
         const controllerObj = JSON.parse(message);
+        const cmd = "command";
+        let sendCommand = Number(controllerObj.localControllerArray[16]);
         let takeOffBtn = Number(controllerObj.localControllerArray[8]);
-        let landingBtn = controllerObj.localControllerArray[9];
+        let landingBtn = Number(controllerObj.localControllerArray[9]);
+        //Note TODO: Input Emergency
+        //let emergency;
 
-        if (takeOffBtn === 1) {
-          console.log("test");
-          for (const command of takeOffCmd) {
-            djiTello.send(command, 0, command.length, udp, telloIp, (err) => {
-              console.log(err);
-            });
-          }
+        if (sendCommand === 1) {
+          console.log(sendCommand);
+          enterSDK(cmd);
         }
-
+        if (takeOffBtn === 1) sendFlightCommand("takeoff");
+        if (landingBtn === 1) sendFlightCommand("land");
         /**
          * Notes For Drone Operation:
          * Left Axis:
@@ -53,14 +63,39 @@ fastify.register(async function (fast) {
          */
 
         //DEADZONE MUST BE SET TO A NEW 0 THAT NEW 0 IS 0.2?
-        let leftXaxis = Number(controllerObj.localControllerAxes[0].toFixed(1));
-        let leftYaxis = Number(controllerObj.localControllerAxes[1].toFixed(1));
-        let rightXaxis = Number(
-          controllerObj.localControllerAxes[2].toFixed(1)
-        );
-        let rightYaxis = Number(
-          controllerObj.localControllerAxes[3].toFixed(1)
-        );
+        let deadzone = 0.2;
+        let leftXaxis =
+          Number(controllerObj.localControllerAxes[0].toFixed(1)) * 100;
+        let leftYaxis =
+          Number(controllerObj.localControllerAxes[1].toFixed(1)) * 100;
+        let rightXaxis =
+          Number(controllerObj.localControllerAxes[2].toFixed(1)) * 100;
+        let rightYaxis =
+          Number(controllerObj.localControllerAxes[3].toFixed(1)) * 100;
+
+        //Must follow rc a b c d
+        //if all axes = 0
+        // rc 0 0 0 0
+        //THIS WORKS! We lost a propellor though :(
+        let rcCmd = `rc ${leftXaxis} ${leftYaxis} ${rightXaxis} ${rightYaxis}`;
+
+        djiTello.send(rcCmd, 0, rcCmd.length, udp, telloIp, (err) => {
+          console.log(err);
+        });
+        //If all axes = 0, do nothing
+        //else sendFlightCommand(rcCmd)
+
+        function enterSDK(sdkCmd) {
+          djiTello.send(sdkCmd, 0, sdkCmd.length, udp, telloIp, (err) => {
+            console.log(err);
+          });
+        }
+
+        function sendFlightCommand(flightCmd) {
+          djiTello.send(flightCmd, 0, flightCmd.length, udp, telloIp, (err) => {
+            console.log(err);
+          });
+        }
 
         /**
          * Do we need function that takes code
@@ -78,14 +113,8 @@ fastify.register(async function (fast) {
          */
 
         //This returns info the frontend
-        connection.socket.send(`You have just pressed button: : Value `);
+        connection.socket.send(JSON.stringify({ droneState }));
       });
-
-      // djiTelloState
-      //   .on("message", (message) => {
-      //     console.log(`${message}`);
-      //   })
-      //   .bind(udpTelloStatePort);
     }
   );
 });
@@ -127,4 +156,32 @@ Notes:
  Our controller is -1 to 0.0 to 1
 
  We believe that, the axes determine the speed
+*/
+
+/*
+  [
+  'pitch:0',  'roll:0',
+  'yaw:-9',   'vgx:0',
+  'vgy:0',    'vgz:0',
+  'templ:88', 'temph:89',
+  'tof:10',   'h:0',
+  'bat:90',   'baro:35.67',
+  'time:0',   'agx:-14.00',
+  'agy:0.00', 'agz:-1001.00',
+  '\r\n'
+]
+ */
+
+/*
+
+xmetrix: you should setup a deadzone
+xmetrix: for the controller axes
+xmetrix: and send stop() command if its in the deadzone
+
+
+
+(node:1296) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 
+11 listening listeners added to [Socket]. Use emitter.setMaxListeners() to increase limit   
+(Use `node --trace-warnings ...` to show where the warning 
+was created)
 */
