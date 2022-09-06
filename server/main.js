@@ -49,8 +49,12 @@ fastify.register(async function (fast) {
           console.log(sendCommand);
           enterSDK(cmd);
         }
-        if (takeOffBtn === 1) sendFlightCommand("takeoff");
-        if (landingBtn === 1) sendFlightCommand("land");
+        if (takeOffBtn === 1) {
+          sendFlightCommand("takeoff");
+        }
+        if (landingBtn === 1) {
+          sendFlightCommand("land");
+        }
         /**
          * Notes For Drone Operation:
          * Left Axis:
@@ -113,7 +117,22 @@ fastify.register(async function (fast) {
          */
 
         //This returns info the frontend
-        connection.socket.send(JSON.stringify({ droneState }));
+
+        //implement lodash throttle
+        connection.socket.send(JSON.stringify({ droneState: droneState }));
+
+        /*
+        
+        lodash throttle??
+
+        djiTelloState
+        .on("message", throttle(msg) => {
+          console.log(msg.toString().split(";"));
+         const droneState = msg.toString().split(";");
+          connection.socket.send(JSON.stringify({ droneState: droneState }));
+        },100)
+        .bind(stateOfTelloUDPPort, selfIp);
+        */
       });
     }
   );
