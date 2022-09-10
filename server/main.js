@@ -24,13 +24,13 @@ fastify.register(async function (fast) {
         })
         .bind(udp);
 
-      let droneState;
-      djiTelloState
-        .on("message", (msg) => {
-          console.log(msg.toString().split(";"));
-          droneState = msg.toString().split(";");
-        })
-        .bind(stateOfTelloUDPPort, selfIp);
+      // let droneState;
+      // djiTelloState
+      //   .on("message", (msg) => {
+      //     console.log(msg.toString().split(";"));
+      //     droneState = msg.toString().split(";");
+      //   })
+      //   .bind(stateOfTelloUDPPort, selfIp);
 
       connection.socket.on("message", (message) => {
         // message.toString() === 'hi from client'
@@ -38,7 +38,7 @@ fastify.register(async function (fast) {
         //Takes message from the front end when controll input
         //console.log(JSON.parse(message));
         const controllerObj = JSON.parse(message);
-        const cmd = "command";
+        const cmd = Buffer.from("command");
         let sendCommand = Number(controllerObj.localControllerArray[16]);
         let takeOffBtn = Number(controllerObj.localControllerArray[8]);
         let landingBtn = Number(controllerObj.localControllerArray[9]);
@@ -46,14 +46,13 @@ fastify.register(async function (fast) {
         //let emergency;
 
         if (sendCommand === 1) {
-          console.log(sendCommand);
           enterSDK(cmd);
         }
-        if (takeOffBtn === 1) {
-          sendFlightCommand("takeoff");
+        if (takeOffBtn) {
+          sendFlightCommand(Buffer.from("takeoff"));
         }
         if (landingBtn === 1) {
-          sendFlightCommand("land");
+          sendFlightCommand(Buffer.from("land"));
         }
         /**
          * Notes For Drone Operation:
@@ -71,7 +70,7 @@ fastify.register(async function (fast) {
         let leftXaxis =
           Number(controllerObj.localControllerAxes[0].toFixed(1)) * 100;
         let leftYaxis =
-          Number(controllerObj.localControllerAxes[1].toFixed(1)) * 100;
+          Number(controllerObj.localControllerAxes[1].toFixed(1)) * -100;
         let rightXaxis =
           Number(controllerObj.localControllerAxes[2].toFixed(1)) * 100;
         let rightYaxis =
@@ -81,7 +80,9 @@ fastify.register(async function (fast) {
         //if all axes = 0
         // rc 0 0 0 0
         //THIS WORKS! We lost a propellor though :(
-        let rcCmd = `rc ${leftXaxis} ${leftYaxis} ${rightXaxis} ${rightYaxis}`;
+        let rcCmd = Buffer.from(
+          `rc ${leftXaxis} ${leftYaxis} ${rightYaxis} ${rightXaxis}`
+        );
 
         djiTello.send(rcCmd, 0, rcCmd.length, udp, telloIp, (err) => {
           console.log(err);
@@ -96,6 +97,9 @@ fastify.register(async function (fast) {
         }
 
         function sendFlightCommand(flightCmd) {
+          djiTello.send(cmd, 0, cmd.length, udp, telloIp, (err) => {
+            console.log(err);
+          });
           djiTello.send(flightCmd, 0, flightCmd.length, udp, telloIp, (err) => {
             console.log(err);
           });
@@ -119,7 +123,7 @@ fastify.register(async function (fast) {
         //This returns info the frontend
 
         //implement lodash throttle
-        connection.socket.send(JSON.stringify({ droneState: droneState }));
+        // connection.socket.send(JSON.stringify({ droneState: droneState }));
 
         /*
         
