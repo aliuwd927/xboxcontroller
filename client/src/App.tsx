@@ -81,7 +81,6 @@ function App() {
     return () => clearInterval(interval);
   }, [localControllerArray, localControllerAxes, sendToBackEnd]);
 
-  console.log(lastMessage?.data);
   return (
     <div className="App">
       <div className="previous_sent">
