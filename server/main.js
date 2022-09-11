@@ -4,8 +4,10 @@ const telloIp = "192.168.10.1";
 const selfIp = "0.0.0.0";
 const udp = 8889;
 const stateOfTelloUDPPort = 8890;
-const djiTello = dgram.createSocket("udp4"),
-  djiTelloState = dgram.createSocket("udp4");
+const telloStreamUDP = 11111;
+const djiTello = dgram.createSocket("udp4");
+const djiTelloState = dgram.createSocket("udp4");
+const djiTelloVideo = dgram.createSocket("udp4");
 
 //Global Varibale only for the drone
 
@@ -23,6 +25,13 @@ fastify.register(async function (fast) {
           );
         })
         .bind(udp);
+      //let videoFeed;
+      // djiTelloVideo
+      //   .on("message", (msg) => {
+      //     //console.log(msg);
+      //     //videoFeed = new Blob([msg]);
+      //   })
+      //   .bind(telloStreamUDP, selfIp);
 
       // let droneState;
       // djiTelloState
@@ -39,16 +48,19 @@ fastify.register(async function (fast) {
         //console.log(JSON.parse(message));
         const controllerObj = JSON.parse(message);
         const cmd = Buffer.from("command");
-        let sendCommand = Number(controllerObj.localControllerArray[16]);
+        let telloStreamOnService = Number(
+          controllerObj.localControllerArray[16]
+        );
         let takeOffBtn = Number(controllerObj.localControllerArray[8]);
         let landingBtn = Number(controllerObj.localControllerArray[9]);
         //Note TODO: Input Emergency
         //let emergency;
-
-        if (sendCommand === 1) {
-          enterSDK(cmd);
+        if (telloStreamOnService === 1) {
+          //do something
+          console.log("text sent");
+          djiTelloStreamVideo(Buffer.from("streamon"));
         }
-        if (takeOffBtn) {
+        if (takeOffBtn === 1) {
           sendFlightCommand(Buffer.from("takeoff"));
         }
         if (landingBtn === 1) {
@@ -90,17 +102,20 @@ fastify.register(async function (fast) {
         //If all axes = 0, do nothing
         //else sendFlightCommand(rcCmd)
 
-        function enterSDK(sdkCmd) {
-          djiTello.send(sdkCmd, 0, sdkCmd.length, udp, telloIp, (err) => {
-            console.log(err);
-          });
-        }
-
         function sendFlightCommand(flightCmd) {
           djiTello.send(cmd, 0, cmd.length, udp, telloIp, (err) => {
             console.log(err);
           });
           djiTello.send(flightCmd, 0, flightCmd.length, udp, telloIp, (err) => {
+            console.log(err);
+          });
+        }
+
+        function djiTelloStreamVideo(streamcmd) {
+          djiTello.send(cmd, 0, cmd.length, udp, telloIp, (err) => {
+            console.log(err);
+          });
+          djiTello.send(streamcmd, 0, streamcmd.length, udp, telloIp, (err) => {
             console.log(err);
           });
         }
@@ -137,6 +152,7 @@ fastify.register(async function (fast) {
         },100)
         .bind(stateOfTelloUDPPort, selfIp);
         */
+        //connection.socket.send(JSON.stringify({ video: videoFeed }));
       });
     }
   );
@@ -207,4 +223,7 @@ xmetrix: and send stop() command if its in the deadzone
 11 listening listeners added to [Socket]. Use emitter.setMaxListeners() to increase limit   
 (Use `node --trace-warnings ...` to show where the warning 
 was created)
+
+
+ffmpeg -probesize 32 -analyzeduration 0 -fflags nobuffer -flags low_delay -strict experimental -f h264 -i udp://@0.0.0.0:11111 -f sdl "Tello"
 */

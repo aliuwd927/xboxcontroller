@@ -37,16 +37,6 @@ function App() {
     //When button is depress, A button still read undefined.
   }, [sendMessage, localControllerArray, localControllerAxes]);
 
-  useEffect(() => {
-    window.addEventListener("gamepadconnected", () => {
-      const gamePad = navigator.getGamepads()[0];
-    });
-
-    return window.removeEventListener("gamepadconnected", () => {
-      return;
-    });
-  }, []);
-
   //constant data stream
 
   useEffect(() => {
@@ -83,6 +73,7 @@ function App() {
 
   return (
     <div className="App">
+      <video id="djiTelloCam" autoPlay playsInline></video>
       <div className="previous_sent">
         <h1>{`${lastMessage?.data}`}</h1>
       </div>
