@@ -33,13 +33,13 @@ fastify.register(async function (fast) {
       //   })
       //   .bind(telloStreamUDP, selfIp);
 
-      // let droneState;
-      // djiTelloState
-      //   .on("message", (msg) => {
-      //     console.log(msg.toString().split(";"));
-      //     droneState = msg.toString().split(";");
-      //   })
-      //   .bind(stateOfTelloUDPPort, selfIp);
+      let droneState;
+      djiTelloState
+        .on("message", (msg) => {
+          console.log(msg.toString().split(";"));
+          droneState = msg.toString().split(";");
+        })
+        .bind(stateOfTelloUDPPort, selfIp);
 
       connection.socket.on("message", (message) => {
         // message.toString() === 'hi from client'
@@ -78,7 +78,7 @@ fastify.register(async function (fast) {
          */
 
         //DEADZONE MUST BE SET TO A NEW 0 THAT NEW 0 IS 0.2?
-        let deadzone = 0.2;
+
         let leftXaxis =
           Number(controllerObj.localControllerAxes[0].toFixed(1)) * 100;
         let leftYaxis =
@@ -138,7 +138,7 @@ fastify.register(async function (fast) {
         //This returns info the frontend
 
         //implement lodash throttle
-        // connection.socket.send(JSON.stringify({ droneState: droneState }));
+        connection.socket.send(JSON.stringify(droneState));
 
         /*
         

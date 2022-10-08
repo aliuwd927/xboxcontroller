@@ -76,6 +76,9 @@ function App() {
       <video id="djiTelloCam" autoPlay playsInline></video>
       <div className="previous_sent">
         <h1>{`${lastMessage?.data}`}</h1>
+        {/* ["pitch:11","roll:-59","yaw:-89","vgx:-3","vgy:-1","vgz:33","templ:72",
+             "temph:75","tof:10","h:90","bat:66","baro:-14.09","time:185","agx:33.00",
+             "agy:249.00","agz:-196.00","\r\n"] */}
       </div>
       <div></div>
       <div className="_Left_Analog_Stick_Container">
